@@ -3,9 +3,9 @@ import socket
 
 # import threading library 
 import threading 
-
+import crypt
 # Choose a port that is free 
-PORT = 5000
+PORT = 5106
 
 # An IPv4 address is obtained 
 # for the server. 
@@ -17,11 +17,15 @@ ADDRESS = (SERVER, PORT)
 # the format in which encoding 
 # and decoding will occur 
 FORMAT = "utf-8"
-
+n, z, totient1, totient2, public_key1, private_key1, public_key2, private_key2,p,q,r,s = crypt.runRSA(10)
+print('public key1: ' + str(public_key1) + ' n1: ' + str(n) + ' public key2: ' + str(public_key2) + ' n2: ' + str(z))
 # Lists that will contains 
 # all the clients connected to 
 # the server and their names. 
 clients, names = [], [] 
+public_key1_clients, public_key2_clients = [] , []
+n1_clients, n2_clients = [], []
+
 
 # Create a new socket for 
 # the server 
@@ -46,6 +50,7 @@ def startChat():
 		# a new connection to the client 
 		# and the address bound to it 
 		conn, addr = server.accept() 
+		conn.sendall(str.encode("\n".join([str(public_key1), str(n),str(public_key2),str(z)])))
 		conn.send("NAME".encode(FORMAT)) 
 		
 		# 1024 represents the max amount 
@@ -57,6 +62,7 @@ def startChat():
 		names.append(name) 
 		clients.append(conn) 
 		
+
 		print(f"Name is :{name}") 
 		
 		# broadcast message 
