@@ -4,22 +4,26 @@ import threading
 from tkinter import *
 from tkinter import font 
 from tkinter import ttk 
+import crypt
 
 # import all functions / 
 # everthing from chat.py file 
-#from chat import *
 
-PORT = 5000
+PORT = 4149
 SERVER = "127.0.1.1"
 ADDRESS = (SERVER, PORT) 
 FORMAT = "utf-8"
-
+global public_key1_server, n_server,public_key2_server,z_server
 # Create a new client socket 
 # and connect to the server 
-client = socket.socket(socket.AF_INET, 
-					socket.SOCK_STREAM) 
+client = socket.socket(socket.AF_INET,  
+                      socket.SOCK_STREAM) 
 client.connect(ADDRESS) 
 
+public_key1_server, n_server,public_key2_server,z_server = [int(i) for i in client.recv(1024).decode('utf-8').split('\n')]
+client.send('message received'.encode(FORMAT))
+n, z, totient1, totient2, public_key1, private_key1, public_key2, private_key2,p,q,r,s = crypt.runRSA(10)
+client.sendall(str.encode("\n".join([str(public_key1), str(n),str(public_key2),str(z)])))
 
 # GUI class for the chat 
 class GUI: 
@@ -190,7 +194,7 @@ class GUI:
 		while True: 
 			try: 
 				message = client.recv(1024).decode(FORMAT) 
-				
+					
 				# if the messages from the server is NAME send the client's name 
 				if message == 'NAME': 
 					client.send(self.name.encode(FORMAT)) 
@@ -198,22 +202,24 @@ class GUI:
 					# insert messages to text box 
 					self.textCons.config(state = NORMAL) 
 					self.textCons.insert(END, 
-										message+"\n\n") 
-					
+											message+"\n\n") 
+						
 					self.textCons.config(state = DISABLED) 
 					self.textCons.see(END) 
 			except: 
 				# an error will be printed on the command line or console if there's an error 
 				print("An error occured!") 
 				client.close() 
-				break
+				break 
 		
 	# function to send messages 
 	def sendMessage(self): 
 		self.textCons.config(state=DISABLED) 
 		while True: 
-			message = (f"{self.name}: {self.msg}") 
-			client.send(message.encode(FORMAT))	 
+			self.msg = self.name + ' - ' + self.msg
+			self.msg = crypt.encrypt(self.msg,public_key1_server,public_key2_server,n_server,z_server)
+			message =  (f"{self.msg}")
+			client.send(message.encode(FORMAT)) 
 			break	
 
 # create a GUI class object 
