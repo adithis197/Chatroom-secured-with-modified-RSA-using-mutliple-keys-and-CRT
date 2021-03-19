@@ -5,7 +5,7 @@ import socket
 import threading 
 import crypt
 # Choose a port that is free 
-PORT = 5106
+PORT = 4149
 
 # An IPv4 address is obtained 
 # for the server. 
@@ -51,10 +51,11 @@ def startChat():
 		# and the address bound to it 
 		conn, addr = server.accept() 
 		conn.sendall(str.encode("\n".join([str(public_key1), str(n),str(public_key2),str(z)])))
-		conn.send("NAME".encode(FORMAT)) 
-		
+		rec = conn.recv(1024).decode(FORMAT)
+		public_key1_client, n_client,public_key2_client,z_client = [int(i) for i in conn.recv(1024).decode('utf-8').split('\n')]
 		# 1024 represents the max amount 
 		# of data that can be received (bytes) 
+		conn.send("NAME".encode(FORMAT))
 		name = conn.recv(1024).decode(FORMAT) 
 		
 		# append the name and client 
@@ -88,19 +89,28 @@ def handle(conn, addr):
 	
 	while connected: 
 		# recieve message 
-		message = conn.recv(1024) 
-		
+		message = conn.recv(1024).decode(FORMAT)
+		print(message)
+		message = message[(message.index('[') + 1):]
+		message = message[:message.index(']')]
+		message = [i.strip() for i in message.split(',')]
+		message = [i[1:] for i in message]
+		message = [i[:-1] for i in message]
+		message = [int(i) for i in message]
+		print(message)
 		# broadcast message 
-		broadcastMessage(message) 
-	
-	# close the connection 
+		de = crypt.decrypt(message,private_key1,private_key2,p,q,r,s,z)
+		print(de)
+		broadcastMessage(''.join(de))
+		
+		# close the connection 
 	conn.close() 
 
 # method for broadcasting 
 # messages to the each clients 
 def broadcastMessage(message): 
 	for client in clients: 
-		client.send(message) 
+		client.send(str(message).encode(FORMAT)) 
 
 # call the method to 
 # begin the communication 

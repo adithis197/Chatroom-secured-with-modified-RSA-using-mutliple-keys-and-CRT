@@ -9,7 +9,7 @@ import crypt
 # import all functions / 
 # everthing from chat.py file 
 
-PORT = 5106
+PORT = 4149
 SERVER = "127.0.1.1"
 ADDRESS = (SERVER, PORT) 
 FORMAT = "utf-8"
@@ -21,6 +21,9 @@ client = socket.socket(socket.AF_INET,
 client.connect(ADDRESS) 
 
 public_key1_server, n_server,public_key2_server,z_server = [int(i) for i in client.recv(1024).decode('utf-8').split('\n')]
+client.send('message received'.encode(FORMAT))
+n, z, totient1, totient2, public_key1, private_key1, public_key2, private_key2,p,q,r,s = crypt.runRSA(10)
+client.sendall(str.encode("\n".join([str(public_key1), str(n),str(public_key2),str(z)])))
 
 # GUI class for the chat 
 class GUI: 
@@ -213,8 +216,9 @@ class GUI:
 	def sendMessage(self): 
 		self.textCons.config(state=DISABLED) 
 		while True: 
+			self.msg = self.name + ' - ' + self.msg
 			self.msg = crypt.encrypt(self.msg,public_key1_server,public_key2_server,n_server,z_server)
-			message = (f"{self.name}: {self.msg}") 
+			message =  (f"{self.msg}")
 			client.send(message.encode(FORMAT)) 
 			break	
 

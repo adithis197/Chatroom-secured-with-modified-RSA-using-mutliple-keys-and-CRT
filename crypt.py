@@ -49,7 +49,6 @@ def runRSA(bits):
 
 def encrypt(message, public_key1, public_key2, n, z):
     enc_list1 = []
-    decrypted_mess = ""
     enc_list2 = []
     #print("Encypting your message..")
     for char in message:
@@ -106,18 +105,22 @@ def chineseremaindertheorem(dq, dp, p, q, c):
 
 def decrypt(ct_list, private_key1,private_key2,p,q,r,s,z):
     
-    c1 = ""
+    c1 = []
+    decrypted_mess = []
     dq = pow(private_key1, 1, q - 1) 
     dp = pow(private_key1, 1, p - 1)
     print("\nDecrypting your message\n")
+    print(ct_list)
+    print(type(ct_list))
+    print(len(ct_list))
     for ct in ct_list:
         print(ct)
         decr = (pow(int(ct), private_key2, z))
         print(decr)
-        c1 += chr(decr)
+        c1.append(decr)
     for ct in c1:
-        decr = chineseremaindertheorem(dq, dp, p, q, int(c1))
+        decr = chineseremaindertheorem(dq, dp, p, q, ct)
         print(decr)
-        decrypted_mess += chr(decr)
+        decrypted_mess.append(chr(decr))
         
     return decrypted_mess
